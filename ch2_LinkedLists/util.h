@@ -77,13 +77,16 @@ Node *reverseList(Node* &head)
 }
 
 // Helper 4 --- copy list
-Node *copyList(Node* head)
+Node *copyList(Node* &head)
 {
-    Node *newhead = nullptr, *newtail = nullptr;
-    while(head!=nullptr)
+    Node *current = head;
+    Node *newhead = nullptr;
+    Node *newtail = nullptr;
+    
+    while(current!=nullptr)
     {
         Node *newNode = new Node;
-        newNode->data = head->data;
+        newNode->data = current->data;
         newNode->next = nullptr;
        
         if(newhead==nullptr){
@@ -92,10 +95,40 @@ Node *copyList(Node* head)
         }
         else{
             newtail->next = newNode;
-            newtail       = newNode;
+            newtail       = newtail->next;
         }
+        
+        current = current->next;                        // :: MISTAKE:: missed this. 
 
         
     }
     return newhead;
 }
+
+// Helper 5 --- return length of linked list.
+int length(Node* &head)
+{
+    int count = 0;
+    while(head!=nullptr){
+        count+=1;
+        head = head->next;
+    }
+    return count;
+}
+
+// Helper 6 --- insert node at head.
+void insertAtHead(Node* &head, int data)
+{
+    Node *newNode = new Node;
+    newNode->data = data;
+    newNode->next = head;
+    head = newNode;
+}
+
+// Helper 7 --- pad ZEROs at the beginning of the list.
+void padList(Node* &head, int padding)
+{
+    for(int i = 0; i < padding; i++)
+        insertAtHead(head,0);
+}
+

@@ -114,9 +114,26 @@ Node *sumListsIterative(Node* L1, Node* L2)
  Space    : O(max(M,N)) -- length equivalent to #nodes of the longer of the lists L1,L2.
  
  */
-Node * sumListsRecursive(Node* L1, Node* L2, int carry)
+Node* sumListsRecursive(Node* L1, Node* L2, int carry)
 {
+    // Base Case.
+    if (L1==nullptr && L2==nullptr && carry==0)
+        return nullptr;
     
+    // Recurse
+    int value = carry;
+    if(L1)
+        value += L1->data;
+    if(L2)
+        value += L2->data;
+    Node *resultNode = new Node;        // |
+    resultNode->data = (value%10);      // |--> new node creation. 
+    resultNode->next = nullptr;         // |
+    
+    
+    resultNode->next = sumListsRecursive( (L1 ? (L1->next) : nullptr) , (L2 ? (L2->next) : nullptr), (value>9 ? 1 :0));
+    
+    return resultNode;
 }
 
 
@@ -132,10 +149,11 @@ int main()
     printList(L1);
     printList(L2);
     
-    Node *summed = sumListsIterative(L1, L2);
+    Node *summedIterative = sumListsIterative(L1, L2);
+    printList(summedIterative);
     
-    printList(summed);
-    
+    Node *summedRecursive = sumListsRecursive(L1, L2, 0);
+    printList(summedRecursive);
     
     return 0;
 }
