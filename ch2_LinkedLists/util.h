@@ -106,7 +106,7 @@ Node *copyList(Node* &head)
 }
 
 // Helper 5 --- return length of linked list.
-int length(Node* &head)
+int length(Node* head)
 {
     int count = 0;
     while(head!=nullptr){
