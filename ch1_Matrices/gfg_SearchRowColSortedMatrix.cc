@@ -56,7 +56,7 @@ int main(){
 	if (rows==-1)
 	    cout << "False\n";
 	else
-	    cout << "True\n";
+	    cout << "True\n"; // tested
     
     
 	return 0;
