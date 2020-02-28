@@ -5,18 +5,19 @@
 #include <numeric>
 #include <vector>
 
-
+// {TODO} Design better. Which elements
 class Sorter
 {
     private:
     std:: vector<int> number_list;
-    void reset_vector(std::vector<int> & vec);
+    
 
     public:
     Sorter(std::vector<int> v): number_list(v) {};
 
     const std::vector<int>& fetch_vector();
     void print_vector(const std::vector<int> & v);
+    void reset_vector(std::vector<int> & vec);
 
     // Suboptimal brute force sorts
     void bubbleSort();         // Brute

@@ -1,7 +1,7 @@
 #include <limits.h>
 #include <iterator>
 #include "sorts.h"
-#include "util.h"
+#include "util.h"  // {TODO : Why does the linker fail in calling print_vector from here?}
 
 
 const std::vector<int>&  Sorter::fetch_vector()
@@ -50,7 +50,15 @@ void Sorter::selectionSort()
 
 void Sorter::bubbleSort()
 {
-
+    for (int i = 0; i < number_list.size()-1; i++) {
+        for (int j = 0; j < number_list.size()-i-1; j++) {
+            if (number_list[j]>number_list[j+1]) {
+                int temp = number_list[j];
+                number_list[j] = number_list[j+1];
+                number_list[j+1] = temp;
+            }
+        }
+    }
 }
 
 void Sorter::insertionSort()
@@ -66,12 +74,20 @@ int main()
     // sorter class object initialization
     Sorter sorter(V);
 
-    // Perform first brute force 'child's sorting' mechanism
+    // Perform first brute force 'child's sorting' mechanism : Selection sort
     sorter.selectionSort();
-    sorter.print_vector(sorter.fetch_vector()); // print to confirm
-
-
-
+    sorter.print_vector(sorter.fetch_vector()); // print to confirm {TODO: Add time measured}
+    sorter.reset_vector(V);
     
-    
+    // Perform second brute force : Bubble sort
+    sorter.bubbleSort();
+    sorter.print_vector(sorter.fetch_vector());
+    sorter.reset_vector(V);
+
+    // Perform a slightly better sort : Insertion sort
+    /*sorter.insertionSort();
+    sorter.print_vector(sorter.fetch_vector());
+    sorter.reset_vector(V);*/
+
+    return 0;
 }
