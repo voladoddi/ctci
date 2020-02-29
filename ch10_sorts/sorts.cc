@@ -63,7 +63,17 @@ void Sorter::bubbleSort()
 
 void Sorter::insertionSort()
 {
-
+    int i, j , key_to_insert;
+    for (i = 1; i < number_list.size(); i++) {
+        key_to_insert = number_list[i];
+        j = i-1;
+        while( (j >= 0) && number_list[j]>key_to_insert) { // keep moving all elements to right if they're greater
+            number_list[j+1] = number_list[j];
+            j--;
+        }
+        //insert
+        number_list[j+1] = key_to_insert; // All elements until j have been moved. Now it's at i-1. Therefore, insert at 'i'.
+    }
 }
 
 int main()
@@ -85,9 +95,9 @@ int main()
     sorter.reset_vector(V);
 
     // Perform a slightly better sort : Insertion sort
-    /*sorter.insertionSort();
+    sorter.insertionSort();
     sorter.print_vector(sorter.fetch_vector());
-    sorter.reset_vector(V);*/
+    sorter.reset_vector(V);
 
     return 0;
 }
