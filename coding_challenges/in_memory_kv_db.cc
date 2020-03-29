@@ -43,7 +43,7 @@ class RedisLikeDB {
         void DelValue(int value);
         void StartTransaction();
         int StopTransaction();
-        void DiscardTransaction();
+        int DiscardTransaction();
         string processDBCommand(string & cmd, RedisLikeDB & db_object);
 };
 
@@ -101,7 +101,7 @@ void RedisLikeDB::Incr(string & key)
         if (transactions_to_discard_.empty() || transactions_to_discard_.front().first != key) {
             transactions_to_discard_.push({key,transactional_value});
         }
-        count_transactions_++;
+        cout << " CT: " << count_transactions_++;
     }
 }
 
@@ -161,11 +161,14 @@ int RedisLikeDB::StopTransaction()
         transaction_in_progress_ = false;
         count_transactions_ = 0;
     }
+    cout << "NT: Exec " << num_transactions << endl;
     return num_transactions;
 }
 
-void RedisLikeDB::DiscardTransaction()
+int RedisLikeDB::DiscardTransaction()
 {
+    int num_transactions = count_transactions_;
+
     while(!transactions_to_discard_.empty()) {              // "Undo" all the transactions from current transaction block
         auto transaction = transactions_to_discard_.front();
         if (transaction.second == -1) {
@@ -175,17 +178,24 @@ void RedisLikeDB::DiscardTransaction()
         }
         transactions_to_discard_.pop();
     }
+    count_transactions_ = 0;
+    return num_transactions;
 }
 
 string RedisLikeDB::processDBCommand(string & cmd, RedisLikeDB & db)
 {
-    cout << cmd << endl;
+
+    string result("");
+    if (cmd.empty()) {
+        return result;
+    }
+
     int first_space = cmd.find_first_of(" ");
     int second_space = cmd.find_last_of(" ");
     string key;
     int value; 
 
-    string result("");
+    
 
     if (cmd.find("SET")!= string::npos) {
         int len_key = second_space - first_space - 1;
@@ -216,8 +226,8 @@ string RedisLikeDB::processDBCommand(string & cmd, RedisLikeDB & db)
             result = to_string(num_transactions_executed);
         }
     } else if (cmd.find("DISCARD")!= string::npos) {
-        int num_transactions_discarded = db.StopTransaction();
-        if (num_transactions_discarded == -1) {
+        int num_transactions_discarded = db.DiscardTransaction();
+        if (num_transactions_discarded == 0) {
             result = "NOT IN TRANSACTION";
         } else {
             db.DiscardTransaction();
@@ -229,36 +239,48 @@ string RedisLikeDB::processDBCommand(string & cmd, RedisLikeDB & db)
     return result;
 }
 
+void run_tests (vector<string> & test_ip, vector<string> & test_op, string test_name)
+{
+    RedisLikeDB test_db;
+    vector<string> result;
+    
+    for(int i = 0; i < test_ip.size(); i++) {
+        if (test_op[i] != test_db.processDBCommand(test_ip[i], test_db)) {
+            cout << test_name << ": " << "fail : Expected: " << test_op[i] << 
+                " Actual: " << test_db.processDBCommand(test_ip[i], test_db) << endl;
+            return;
+        }
+    }
+    cout << test_name << ": " << "pass" << endl;
+}
+
 int main()
 {
     char arr[100];
     char c;
     
-    RedisLikeDB test_db;
     // First running through all the test cases. 
-    vector<vector<string>> tests{
-				{"SET key 7", "GET key", "DEL key", "GET key", "INCR key", "GET key"},
-				{"SET key1 7", "SET key2 7", "SET key3 8", "DELVALUE 7", "GET key1", "GET key2", "GET key3"},
-                {"SET key1 12", "MULTI", "DEL key1", "DISCARD", "GET key1"},
-                {"EXEC"},
-                {"DISCARD"}};
+	vector<string> test1{"SET key 7", "GET key", "DEL key", "GET key", "INCR key", "GET key"};
+    vector<string> test2{"SET key1 7", "SET key2 7", "SET key3 8", "DELVALUE 7", "GET key1", "GET key2", "GET key3"};
+    vector<string> test3{"SET key1 12", "MULTI", "DEL key1", "DISCARD", "GET key1"};
+    vector<string> test4{"EXEC"};
+    vector<string> test5{"DISCARD"};
+    vector<string> test6{"MULTI", "SET key1 12", "INCR key1", "GET key1", "DISCARD", "INCR key1", "INCR key1", "EXEC", "GET key1"};
 
-    vector<vector<string>> tests_outputs{
-				{"", "7", "", "<nil>", "", "1"},
-				{"", "", "", "", "<nil>", "<nil>", "8"},
-                {"", "", "", "1", "12"},
-                {"NOT IN TRANSACTION"},
-                {"NOT IN TRANSACTION"}};
+	vector<string> test1result{"", "7", "", "<nil>", "", "1"};
+	vector<string> test2result{"", "", "", "", "<nil>", "<nil>", "8"};
+    vector<string> test3result{"", "", "", "1", "12"};
+    vector<string> test4result{"NOT IN TRANSACTION"};
+    vector<string> test5result{"NOT IN TRANSACTION"};
+    vector<string> test6result{"", "", "", "13", "2", "", "", "2", "2"};
 
-    for(auto test: tests) { // {TODO: Fix test checks}
-        vector <string> test_result;
-        int i;
-        for (i = 0; i <test.size(); i++) {
-            test_result.push_back(test_db.processDBCommand(test[i],  test_db));
-        }
-        cout << (test==test_result) << endl;
-    }
-  
+    run_tests(test1, test1result, "test1");
+    run_tests(test2, test2result, "test2");
+    run_tests(test3, test3result, "test3");
+    run_tests(test4, test4result, "test4");
+    run_tests(test5, test5result, "test5");
+    run_tests(test6, test6result, "test6");
+
   // This is interactive.
   RedisLikeDB interactive_db;
 
