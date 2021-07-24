@@ -26,8 +26,10 @@ class Sorter
 
     // Optimal sorting
     void quickSort();                             // Divide and conquer
-    void MergeSort();                             // Divide and conquer
-    void HeapSort();                              // Transform and conquer
+    void quickSortHelper(std::vector<int> &num_list, int start, int end);
+    void mergeSort();                             // Divide and conquer
+    void mergeSortHelper(std::vector<int> &num_list, int start, int end );
+    void heapSort();                              // Transform and conquer
 
     
 };
